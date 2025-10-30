@@ -1,0 +1,16 @@
+{
+  "name": "@repo/app",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "main": "index.ts",
+  "dependencies": {
+    "react": "^19.2.0",
+    "react-native": "^0.82.1",
+    "solito": "^4.4.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.2",
+    "typescript": "^5.9.3"
+  }
+}

@@ -3,6 +3,14 @@
   "module": "index.ts",
   "type": "module",
   "private": true,
+  "scripts": {
+    "dev": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "build": "expo export",
+    "test": "vitest"
+  },
   "devDependencies": {
     "@types/bun": "latest",
     "@types/react": "^19.2.2",
@@ -16,6 +24,9 @@
     "expo-router": "^6.0.14",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "react-native": "^0.82.1"
+    "react-native": "^0.82.1",
+    "react-native-web": "^0.19.13",
+    "solito": "^4.4.0",
+    "nativewind": "^4.1.23"
   }
 }

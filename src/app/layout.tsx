@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { ThemeProvider } from '@/contexts/ThemeContext';
+import { Providers } from '@/contexts';
 
 export const metadata: Metadata = {
   title: 'Anki Alternative - SRS学習アプリ',
@@ -15,9 +15,9 @@ export default function RootLayout({
   return (
     <html lang="ja" suppressHydrationWarning>
       <body className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
-        <ThemeProvider>
+        <Providers>
           {children}
-        </ThemeProvider>
+        </Providers>
       </body>
     </html>
   );
