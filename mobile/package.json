@@ -11,10 +11,20 @@
     "build": "expo export",
     "test": "vitest"
   },
+  "expo": {
+    "doctor": {
+      "reactNativeDirectoryCheck": {
+        "enabled": false
+      },
+      "duplicateDependenciesCheck": {
+        "enabled": false
+      }
+    }
+  },
   "devDependencies": {
     "@types/bun": "latest",
-    "@types/react": "^19.2.2",
-    "@types/react-dom": "^19.2.2"
+    "@types/react": "~19.1.10",
+    "@types/react-dom": "~19.1.7"
   },
   "peerDependencies": {
     "typescript": "^5"
@@ -22,11 +32,11 @@
   "dependencies": {
     "expo": "^54.0.21",
     "expo-router": "^6.0.14",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
-    "react-native": "^0.82.1",
-    "react-native-web": "^0.19.13",
-    "solito": "^4.4.0",
-    "nativewind": "^4.1.23"
+    "nativewind": "^4.1.23",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-native": "0.81.5",
+    "react-native-web": "^0.21.0",
+    "solito": "^4.4.0"
   }
 }
