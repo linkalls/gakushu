@@ -29,6 +29,24 @@ Object.defineProperty(global, 'matchMedia', {
   })),
 });
 
+// Better Auth react moduleのモック
+vi.mock('better-auth/react', () => ({
+  createAuthClient: () => ({
+    useSession: vi.fn(() => ({
+      data: null,
+      isPending: false,
+      error: null,
+    })),
+    signIn: {
+      email: vi.fn(),
+    },
+    signUp: {
+      email: vi.fn(),
+    },
+    signOut: vi.fn(),
+  }),
+}));
+
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();

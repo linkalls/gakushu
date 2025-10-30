@@ -4,19 +4,26 @@ import { decks, noteTypes, notes, cards, reviewLogs, media } from '../db/schema'
 import { eq, and, lte, sql } from 'drizzle-orm';
 import { CardScheduler } from '../lib/scheduler';
 import { apkgImporter } from '../lib/apkg-importer';
+import { authMiddleware, getUserId } from '../lib/auth-middleware';
 
 const app = new Hono();
 const scheduler = new CardScheduler();
 
+// 認証が必要なルートにミドルウェアを適用
+app.use('/*', authMiddleware);
+
 // デッキAPI
 app.get('/decks', async (c) => {
-  const allDecks = await db.select().from(decks);
+  const userId = getUserId(c);
+  const allDecks = await db.select().from(decks).where(eq(decks.userId, userId));
   return c.json(allDecks);
 });
 
 app.post('/decks', async (c) => {
+  const userId = getUserId(c);
   const body = await c.req.json();
   const [deck] = await db.insert(decks).values({
+    userId,
     name: body.name,
     description: body.description || '',
     created: new Date(),
@@ -26,8 +33,11 @@ app.post('/decks', async (c) => {
 });
 
 app.get('/decks/:id', async (c) => {
+  const userId = getUserId(c);
   const id = parseInt(c.req.param('id'));
-  const deck = await db.select().from(decks).where(eq(decks.id, id)).limit(1);
+  const deck = await db.select().from(decks)
+    .where(and(eq(decks.id, id), eq(decks.userId, userId)))
+    .limit(1);
   if (deck.length === 0) {
     return c.json({ error: 'デッキが見つかりません' }, 404);
   }
@@ -35,6 +45,7 @@ app.get('/decks/:id', async (c) => {
 });
 
 app.put('/decks/:id', async (c) => {
+  const userId = getUserId(c);
   const id = parseInt(c.req.param('id'));
   const body = await c.req.json();
   const [updated] = await db.update(decks)
@@ -43,14 +54,15 @@ app.put('/decks/:id', async (c) => {
       description: body.description,
       modified: new Date(),
     })
-    .where(eq(decks.id, id))
+    .where(and(eq(decks.id, id), eq(decks.userId, userId)))
     .returning();
   return c.json(updated);
 });
 
 app.delete('/decks/:id', async (c) => {
+  const userId = getUserId(c);
   const id = parseInt(c.req.param('id'));
-  await db.delete(decks).where(eq(decks.id, id));
+  await db.delete(decks).where(and(eq(decks.id, id), eq(decks.userId, userId)));
   return c.json({ success: true });
 });
 
@@ -74,13 +86,16 @@ app.post('/note-types', async (c) => {
 
 // ノートAPI
 app.get('/notes', async (c) => {
-  const allNotes = await db.select().from(notes);
+  const userId = getUserId(c);
+  const allNotes = await db.select().from(notes).where(eq(notes.userId, userId));
   return c.json(allNotes);
 });
 
 app.post('/notes', async (c) => {
+  const userId = getUserId(c);
   const body = await c.req.json();
   const [note] = await db.insert(notes).values({
+    userId,
     guid: crypto.randomUUID(),
     noteTypeId: body.noteTypeId,
     fields: body.fields,
@@ -119,8 +134,11 @@ app.post('/notes', async (c) => {
 });
 
 app.get('/notes/:id', async (c) => {
+  const userId = getUserId(c);
   const id = parseInt(c.req.param('id'));
-  const note = await db.select().from(notes).where(eq(notes.id, id)).limit(1);
+  const note = await db.select().from(notes)
+    .where(and(eq(notes.id, id), eq(notes.userId, userId)))
+    .limit(1);
   if (note.length === 0) {
     return c.json({ error: 'ノートが見つかりません' }, 404);
   }
@@ -128,6 +146,7 @@ app.get('/notes/:id', async (c) => {
 });
 
 app.put('/notes/:id', async (c) => {
+  const userId = getUserId(c);
   const id = parseInt(c.req.param('id'));
   const body = await c.req.json();
   const [updated] = await db.update(notes)
@@ -136,13 +155,23 @@ app.put('/notes/:id', async (c) => {
       tags: body.tags,
       modified: new Date(),
     })
-    .where(eq(notes.id, id))
+    .where(and(eq(notes.id, id), eq(notes.userId, userId)))
     .returning();
   return c.json(updated);
 });
 
 app.delete('/notes/:id', async (c) => {
+  const userId = getUserId(c);
   const id = parseInt(c.req.param('id'));
+  // まず、関連するカードを削除
+  const note = await db.select().from(notes)
+    .where(and(eq(notes.id, id), eq(notes.userId, userId)))
+    .limit(1);
+  
+  if (note.length === 0) {
+    return c.json({ error: 'ノートが見つかりません' }, 404);
+  }
+  
   await db.delete(cards).where(eq(cards.noteId, id));
   await db.delete(notes).where(eq(notes.id, id));
   return c.json({ success: true });
@@ -150,16 +179,35 @@ app.delete('/notes/:id', async (c) => {
 
 // カードAPI
 app.get('/cards/due', async (c) => {
+  const userId = getUserId(c);
   const deckId = c.req.query('deckId');
   const now = new Date();
   
   let dueCards;
   
   if (deckId) {
+    // デッキIDが指定された場合、ユーザーのデッキか確認
+    const deck = await db.select().from(decks)
+      .where(and(eq(decks.id, parseInt(deckId)), eq(decks.userId, userId)))
+      .limit(1);
+    
+    if (deck.length === 0) {
+      return c.json({ error: 'デッキが見つかりません' }, 404);
+    }
+    
     dueCards = await db.select().from(cards)
       .where(and(lte(cards.due, now), eq(cards.deckId, parseInt(deckId))));
   } else {
-    dueCards = await db.select().from(cards).where(lte(cards.due, now));
+    // ユーザーの全デッキのカードを取得
+    const userDecks = await db.select().from(decks).where(eq(decks.userId, userId));
+    const deckIds = userDecks.map(d => d.id);
+    
+    if (deckIds.length === 0) {
+      return c.json([]);
+    }
+    
+    dueCards = await db.select().from(cards)
+      .where(and(lte(cards.due, now), sql`${cards.deckId} IN ${deckIds}`));
   }
   
   return c.json(dueCards);

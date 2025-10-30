@@ -1,8 +1,59 @@
 import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
 
+// ユーザーテーブル
+export const users = sqliteTable('user', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  email: text('email').notNull().unique(),
+  emailVerified: integer('emailVerified', { mode: 'boolean' }).notNull().default(false),
+  image: text('image'),
+  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull(),
+});
+
+// セッションテーブル
+export const sessions = sqliteTable('session', {
+  id: text('id').primaryKey(),
+  expiresAt: integer('expiresAt', { mode: 'timestamp' }).notNull(),
+  token: text('token').notNull().unique(),
+  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull(),
+  ipAddress: text('ipAddress'),
+  userAgent: text('userAgent'),
+  userId: text('userId').notNull().references(() => users.id),
+});
+
+// アカウントテーブル
+export const accounts = sqliteTable('account', {
+  id: text('id').primaryKey(),
+  accountId: text('accountId').notNull(),
+  providerId: text('providerId').notNull(),
+  userId: text('userId').notNull().references(() => users.id),
+  accessToken: text('accessToken'),
+  refreshToken: text('refreshToken'),
+  idToken: text('idToken'),
+  accessTokenExpiresAt: integer('accessTokenExpiresAt', { mode: 'timestamp' }),
+  refreshTokenExpiresAt: integer('refreshTokenExpiresAt', { mode: 'timestamp' }),
+  scope: text('scope'),
+  password: text('password'),
+  createdAt: integer('createdAt', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updatedAt', { mode: 'timestamp' }).notNull(),
+});
+
+// 確認トークンテーブル
+export const verifications = sqliteTable('verification', {
+  id: text('id').primaryKey(),
+  identifier: text('identifier').notNull(),
+  value: text('value').notNull(),
+  expiresAt: integer('expiresAt', { mode: 'timestamp' }).notNull(),
+  createdAt: integer('createdAt', { mode: 'timestamp' }),
+  updatedAt: integer('updatedAt', { mode: 'timestamp' }),
+});
+
 // デッキテーブル - Ankiのコレクション
 export const decks = sqliteTable('decks', {
   id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: text('user_id').notNull().references(() => users.id),
   name: text('name').notNull(),
   description: text('description'),
   created: integer('created', { mode: 'timestamp' }).notNull(),
@@ -26,6 +77,7 @@ export const noteTypes = sqliteTable('note_types', {
 // ノート（質問と回答のペア）
 export const notes = sqliteTable('notes', {
   id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: text('user_id').notNull().references(() => users.id),
   guid: text('guid').notNull().unique(),
   noteTypeId: integer('note_type_id').notNull().references(() => noteTypes.id),
   fields: text('fields', { mode: 'json' }).notNull().$type<string[]>(),
@@ -91,3 +143,11 @@ export type ReviewLog = typeof reviewLogs.$inferSelect;
 export type NewReviewLog = typeof reviewLogs.$inferInsert;
 export type Media = typeof media.$inferSelect;
 export type NewMedia = typeof media.$inferInsert;
+export type User = typeof users.$inferSelect;
+export type NewUser = typeof users.$inferInsert;
+export type Session = typeof sessions.$inferSelect;
+export type NewSession = typeof sessions.$inferInsert;
+export type Account = typeof accounts.$inferSelect;
+export type NewAccount = typeof accounts.$inferInsert;
+export type Verification = typeof verifications.$inferSelect;
+export type NewVerification = typeof verifications.$inferInsert;

@@ -2,13 +2,39 @@
 
 import Link from 'next/link';
 import { Header } from '@/components/Header';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { useAuth } from '@/contexts';
 
 export default function HomePage() {
+  return (
+    <ProtectedRoute>
+      <HomePageContent />
+    </ProtectedRoute>
+  );
+}
+
+function HomePageContent() {
+  const { user, logout } = useAuth();
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900 transition-colors">
       <Header title="Anki Alternative" subtitle="間隔反復学習システム" />
 
       <main className="flex-1 container mx-auto px-4 py-8">
+        <div className="mb-6 bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+          <div className="flex justify-between items-center">
+            <p className="text-gray-700 dark:text-gray-300">
+              ようこそ、<span className="font-semibold">{user?.name}</span>さん
+            </p>
+            <button
+              onClick={logout}
+              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+            >
+              ログアウト
+            </button>
+          </div>
+        </div>
+
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Link 
             href="/decks" 
