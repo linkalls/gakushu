@@ -21,6 +21,7 @@
     "test:coverage": "vitest --coverage",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
+    "db:migrate:new": "bun run scripts/migrate-new-features.ts",
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {

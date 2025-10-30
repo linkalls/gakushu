@@ -143,6 +143,110 @@ export type ReviewLog = typeof reviewLogs.$inferSelect;
 export type NewReviewLog = typeof reviewLogs.$inferInsert;
 export type Media = typeof media.$inferSelect;
 export type NewMedia = typeof media.$inferInsert;
+// 共有デッキテーブル - Anki Web like sharing
+export const sharedDecks = sqliteTable('shared_decks', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  deckId: integer('deck_id').notNull().references(() => decks.id),
+  userId: text('user_id').notNull().references(() => users.id),
+  isPublic: integer('is_public', { mode: 'boolean' }).notNull().default(false),
+  shareCode: text('share_code').notNull().unique(),
+  title: text('title').notNull(),
+  description: text('description'),
+  downloadCount: integer('download_count').notNull().default(0),
+  likeCount: integer('like_count').notNull().default(0),
+  created: integer('created', { mode: 'timestamp' }).notNull(),
+  modified: integer('modified', { mode: 'timestamp' }).notNull(),
+});
+
+// 学習履歴統計テーブル - ランキング用
+export const userStats = sqliteTable('user_stats', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: text('user_id').notNull().references(() => users.id),
+  date: integer('date', { mode: 'timestamp' }).notNull(),
+  reviewCount: integer('review_count').notNull().default(0),
+  studyTime: integer('study_time').notNull().default(0), // 秒単位
+  newCardsLearned: integer('new_cards_learned').notNull().default(0),
+  cardsReviewed: integer('cards_reviewed').notNull().default(0),
+  streak: integer('streak').notNull().default(0), // 連続学習日数
+});
+
+// ランキングテーブル
+export const rankings = sqliteTable('rankings', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: text('user_id').notNull().references(() => users.id),
+  totalReviews: integer('total_reviews').notNull().default(0),
+  totalStudyTime: integer('total_study_time').notNull().default(0),
+  currentStreak: integer('current_streak').notNull().default(0),
+  longestStreak: integer('longest_streak').notNull().default(0),
+  rank: integer('rank'),
+  updated: integer('updated', { mode: 'timestamp' }).notNull(),
+});
+
+// クラウドバックアップテーブル
+export const cloudBackups = sqliteTable('cloud_backups', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: text('user_id').notNull().references(() => users.id),
+  backupData: text('backup_data').notNull(), // JSON圧縮データ
+  deviceId: text('device_id').notNull(),
+  deviceType: text('device_type').notNull(), // 'web' | 'mobile' | 'ios' | 'android'
+  version: integer('version').notNull(),
+  created: integer('created', { mode: 'timestamp' }).notNull(),
+});
+
+// カスタムテンプレートテーブル
+export const customTemplates = sqliteTable('custom_templates', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: text('user_id').notNull().references(() => users.id),
+  name: text('name').notNull(),
+  frontTemplate: text('front_template').notNull(),
+  backTemplate: text('back_template').notNull(),
+  css: text('css'),
+  javascript: text('javascript'),
+  isPublic: integer('is_public', { mode: 'boolean' }).notNull().default(false),
+  downloadCount: integer('download_count').notNull().default(0),
+  created: integer('created', { mode: 'timestamp' }).notNull(),
+  modified: integer('modified', { mode: 'timestamp' }).notNull(),
+});
+
+// 音声設定テーブル
+export const voiceSettings = sqliteTable('voice_settings', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: text('user_id').notNull().references(() => users.id),
+  enabled: integer('enabled', { mode: 'boolean' }).notNull().default(false),
+  voice: text('voice'), // 音声ID
+  speed: real('speed').notNull().default(1.0),
+  pitch: real('pitch').notNull().default(1.0),
+  autoPlay: integer('auto_play', { mode: 'boolean' }).notNull().default(false),
+  fieldToRead: text('field_to_read'), // どのフィールドを読み上げるか
+});
+
+// オフライン同期キュー
+export const syncQueue = sqliteTable('sync_queue', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: text('user_id').notNull().references(() => users.id),
+  deviceId: text('device_id').notNull(),
+  entityType: text('entity_type').notNull(), // 'card' | 'deck' | 'note' | 'review'
+  entityId: integer('entity_id').notNull(),
+  action: text('action').notNull(), // 'create' | 'update' | 'delete'
+  data: text('data', { mode: 'json' }),
+  synced: integer('synced', { mode: 'boolean' }).notNull().default(false),
+  created: integer('created', { mode: 'timestamp' }).notNull(),
+});
+
+export type SharedDeck = typeof sharedDecks.$inferSelect;
+export type NewSharedDeck = typeof sharedDecks.$inferInsert;
+export type UserStats = typeof userStats.$inferSelect;
+export type NewUserStats = typeof userStats.$inferInsert;
+export type Ranking = typeof rankings.$inferSelect;
+export type NewRanking = typeof rankings.$inferInsert;
+export type CloudBackup = typeof cloudBackups.$inferSelect;
+export type NewCloudBackup = typeof cloudBackups.$inferInsert;
+export type CustomTemplate = typeof customTemplates.$inferSelect;
+export type NewCustomTemplate = typeof customTemplates.$inferInsert;
+export type VoiceSettings = typeof voiceSettings.$inferSelect;
+export type NewVoiceSettings = typeof voiceSettings.$inferInsert;
+export type SyncQueue = typeof syncQueue.$inferSelect;
+export type NewSyncQueue = typeof syncQueue.$inferInsert;
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Session = typeof sessions.$inferSelect;
