@@ -32,6 +32,12 @@
     "plugins": [
       "expo-router"
     ],
-    "scheme": "anki-alternative"
+    "scheme": "anki-alternative",
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "449bc989-1505-4b7c-a7b5-276e61f19e63"
+      }
+    }
   }
 }
