@@ -1,7 +1,7 @@
 import JSZip from 'jszip';
 import { db } from '../db';
 import { decks, noteTypes, notes, cards, media } from '../db/schema';
-import Database from 'better-sqlite3';
+import { Database } from 'bun:sqlite';
 
 export interface AnkiPackage {
   decks: any[];
@@ -30,7 +30,7 @@ export class ApkgImporter {
       const ankiDb = new Database(':memory:');
       
       // データをメモリDBにロード
-      const stmt = ankiDb.prepare('PRAGMA page_size');
+      const stmt = ankiDb.query('PRAGMA page_size');
       // 実際のインポート処理は簡略化
 
       // メディアファイルを読み込む
@@ -77,9 +77,9 @@ export class ApkgImporter {
   /**
    * Ankiコレクションからデータをインポート
    */
-  private async importCollection(ankiDb: Database.Database, mediaMap: Map<string, string>) {
+  private async importCollection(ankiDb: Database, mediaMap: Map<string, string>) {
     // ノートタイプ（モデル）をインポート
-    const modelsResult = ankiDb.prepare('SELECT models FROM col').get() as { models: string } | undefined;
+    const modelsResult = ankiDb.query('SELECT models FROM col').get() as { models: string } | null;
     if (!modelsResult) return;
     
     const modelsData = JSON.parse(modelsResult.models);
@@ -107,7 +107,7 @@ export class ApkgImporter {
     }
 
     // デッキをインポート
-    const decksResult = ankiDb.prepare('SELECT decks FROM col').get() as { decks: string } | undefined;
+    const decksResult = ankiDb.query('SELECT decks FROM col').get() as { decks: string } | null;
     if (!decksResult) return;
     
     const decksJson = JSON.parse(decksResult.decks);
@@ -127,7 +127,7 @@ export class ApkgImporter {
     }
 
     // ノートをインポート
-    const notesData = ankiDb.prepare('SELECT * FROM notes').all() as any[];
+    const notesData = ankiDb.query('SELECT * FROM notes').all() as any[];
     const noteIdMap = new Map<number, number>();
 
     for (const note of notesData) {
@@ -147,7 +147,7 @@ export class ApkgImporter {
     }
 
     // カードをインポート
-    const cardsData = ankiDb.prepare('SELECT * FROM cards').all() as any[];
+    const cardsData = ankiDb.query('SELECT * FROM cards').all() as any[];
 
     for (const card of cardsData) {
       await db.insert(cards).values({

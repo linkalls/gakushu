@@ -5,9 +5,12 @@ const config: NextConfig = {
   turbopack: {},
   webpack: (config, { isServer }) => {
     if (isServer) {
-      config.externals = [...(config.externals || []), 'better-sqlite3'];
+      config.externals = [...(config.externals || []), 'bun:sqlite'];
     }
     return config;
+  },
+  experimental: {
+    serverComponentsExternalPackages: ['bun:sqlite'],
   },
 };
 

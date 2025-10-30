@@ -15,7 +15,6 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
-    "better-sqlite3": "^12.4.1",
     "drizzle-orm": "^0.44.7",
     "hono": "^4.10.4",
     "jszip": "^3.10.1",
@@ -28,7 +27,6 @@
     "@tailwindcss/postcss": "^4.1.16",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
-    "@types/better-sqlite3": "^7.6.13",
     "@types/bun": "latest",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
