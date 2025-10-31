@@ -310,6 +310,7 @@ app.get('/stats/deck/:id', async (c) => {
 
 // インポートAPI
 app.post('/import/apkg', async (c) => {
+  const userId = getUserId(c);
   const formData = await c.req.formData();
   const file = formData.get('file');
   
@@ -318,7 +319,7 @@ app.post('/import/apkg', async (c) => {
   }
   
   const buffer = await file.arrayBuffer();
-  const result = await apkgImporter.importApkg(Buffer.from(buffer));
+  const result = await apkgImporter.importApkg(Buffer.from(buffer), userId);
   
   return c.json(result);
 });
@@ -543,14 +544,14 @@ app.get('/backups/latest', async (c) => {
   const userId = getUserId(c);
   const deviceType = c.req.query('deviceType');
   
-  let query = db.select().from(cloudBackups)
-    .where(eq(cloudBackups.userId, userId));
+  const whereConditions = deviceType 
+    ? and(eq(cloudBackups.userId, userId), eq(cloudBackups.deviceType, deviceType))
+    : eq(cloudBackups.userId, userId);
   
-  if (deviceType) {
-    query = query.where(eq(cloudBackups.deviceType, deviceType));
-  }
-  
-  const [backup] = await query.orderBy(desc(cloudBackups.created)).limit(1);
+  const [backup] = await db.select().from(cloudBackups)
+    .where(whereConditions)
+    .orderBy(desc(cloudBackups.created))
+    .limit(1);
   
   if (!backup) {
     return c.json({ error: 'バックアップが見つかりません' }, 404);
