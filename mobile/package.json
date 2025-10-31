@@ -5,10 +5,14 @@
   "private": true,
   "scripts": {
     "dev": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web",
     "build": "expo export",
+    "build:android": "eas build --platform android --local",
+    "build:preview": "eas build --platform android --local --profile preview",
+    "build:production": "eas build --platform android --local --profile production",
+    "prebuild": "expo prebuild --platform android --clean",
     "test": "vitest"
   },
   "expo": {
@@ -24,7 +28,8 @@
   "devDependencies": {
     "@types/bun": "latest",
     "@types/react": "~19.1.10",
-    "@types/react-dom": "~19.1.7"
+    "@types/react-dom": "~19.1.7",
+    "tailwindcss": "^4.1.16"
   },
   "peerDependencies": {
     "typescript": "^5"
@@ -38,5 +43,6 @@
     "react-native": "0.81.5",
     "react-native-web": "^0.21.0",
     "solito": "^4.4.0"
-  }
+  },
+  "version": "1.0.0"
 }

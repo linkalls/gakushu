@@ -9,9 +9,7 @@ const config: NextConfig = {
     }
     return config;
   },
-  experimental: {
-    serverComponentsExternalPackages: ['bun:sqlite'],
-  },
+  serverExternalPackages: ['bun:sqlite'],
 };
 
 export default config;

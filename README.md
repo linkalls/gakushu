@@ -76,10 +76,14 @@ bun test --run
 ### モバイルアプリ開発
 
 ```bash
+# プロジェクトルートから
+bun run dev:mobile
+
+# または mobile ディレクトリで直接実行
 cd mobile
 
 # Expo開発サーバー起動
-bun start
+bun run dev
 
 # Android
 bun run android
@@ -89,6 +93,21 @@ bun run ios
 
 # Web (Expoブラウザ版)
 bun run web
+```
+
+### モバイルアプリビルド
+
+```bash
+# Androidプロジェクトを生成（初回のみ）
+bun run prebuild:mobile
+
+# プレビュービルド（推奨 - テスト用）
+bun run build:mobile:preview
+
+# プロダクションビルド
+bun run build:mobile:production
+
+# 詳細は QUICKSTART_BUILD.md を参照
 ```
 
 ## 📚 機能

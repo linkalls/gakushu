@@ -15,7 +15,7 @@ export class ApkgImporter {
   /**
    * APKGファイルをインポート
    */
-  async importApkg(file: File | Buffer): Promise<{ success: boolean; message: string }> {
+  async importApkg(file: File | Buffer, userId: string): Promise<{ success: boolean; message: string }> {
     try {
       const zip = new JSZip();
       const contents = await zip.loadAsync(file);
@@ -37,7 +37,7 @@ export class ApkgImporter {
       const mediaMap = await this.loadMedia(contents);
 
       // データをインポート
-      await this.importCollection(ankiDb, mediaMap);
+      await this.importCollection(ankiDb, mediaMap, userId);
 
       ankiDb.close();
 
@@ -77,7 +77,7 @@ export class ApkgImporter {
   /**
    * Ankiコレクションからデータをインポート
    */
-  private async importCollection(ankiDb: Database, mediaMap: Map<string, string>) {
+  private async importCollection(ankiDb: Database, mediaMap: Map<string, string>, userId: string) {
     // ノートタイプ（モデル）をインポート
     const modelsResult = ankiDb.query('SELECT models FROM col').get() as { models: string } | null;
     if (!modelsResult) return;
@@ -117,6 +117,7 @@ export class ApkgImporter {
     for (const [ankiDeckId, deck] of Object.entries(decksJson)) {
       const deckData = deck as any;
       const [result] = await db.insert(decks).values({
+        userId,
         name: deckData.name,
         description: deckData.desc || '',
         created: new Date(deckData.id),
@@ -135,6 +136,7 @@ export class ApkgImporter {
       const tags = note.tags.trim().split(/\s+/).filter((t: string) => t);
 
       const [result] = await db.insert(notes).values({
+        userId,
         guid: note.guid,
         noteTypeId: modelIdMap.get(note.mid) || 1,
         fields,

@@ -36,6 +36,7 @@
     },
     "mobile": {
       "name": "mobile",
+      "version": "1.0.0",
       "dependencies": {
         "expo": "^54.0.21",
         "expo-router": "^6.0.14",
@@ -50,6 +51,7 @@
         "@types/bun": "latest",
         "@types/react": "~19.1.10",
         "@types/react-dom": "~19.1.7",
+        "tailwindcss": "^4.1.16",
       },
       "peerDependencies": {
         "typescript": "^5",
